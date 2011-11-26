@@ -5,7 +5,7 @@ module ZfbenRailsJobs
       railtie_name :zfben_rails_jobs  
       path = File.realpath(File.dirname(__FILE__))
       rake_tasks do
-        require File.join(path, 'jobs.rake')
+        require File.join(path, 'tasks.rb')
       end
     end
 end
