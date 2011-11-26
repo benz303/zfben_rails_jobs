@@ -1,0 +1,6 @@
+*.gem
+*.log
+.bundle
+sass-cache
+Gemfile.lock
+pkg/*

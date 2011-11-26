@@ -1,0 +1,12 @@
+== SUMMARY
+
+
+== Getting Started
+
+1. adding gem to Gemfile
+
+  gem 'zfben_rails_jobs'
+
+2. update bundle
+
+  bundle install
