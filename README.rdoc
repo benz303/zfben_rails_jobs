@@ -10,3 +10,12 @@
 2. update bundle
 
   bundle install
+
+== How to use
+
+  class Sth
+    def todo args
+    end
+  end
+  
+  Jobs.new.add(Sth, :todo, args)
