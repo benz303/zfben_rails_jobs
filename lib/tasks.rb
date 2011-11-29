@@ -7,24 +7,22 @@ namespace :jobs do
   end
   
   desc 'Start Jobs'
-  task :start => :init do
-    if File.exists? jobs_root + '/.lock'
-      STDERR.print "Jobs are running, please run after they finished.\n"
-      exit!
-    else
-      File.open(jobs_root + '/.lock', 'w'){ |f| f.write Process.pid.to_s }
-      print "Starting jobs at process##{Process.pid}\n"
+  task :start => [:init, :environment] do
+    print "Starting jobs at process##{Process.pid}\n"
+    loop do
       list = Dir[jobs_root + '*']
       if list.length > 0
-        Rake::Task[:environment].execute
+        print "#{list.length} jobs found, running..\n"
         list.each do |id|
+          print "Run Job##{id}@#{Time.now.to_s}\n"
           jobs = Jobs.new
           jobs.import File.basename(id)
           jobs.run
         end
+      else
+        print "No job found, skipping..\n"
       end
-      File.delete(jobs_root + '/.lock')
-      print "Finished jobs\n"
+      sleep 10
     end
   end
   
