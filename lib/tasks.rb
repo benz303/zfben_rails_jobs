@@ -1,5 +1,11 @@
+require 'fileutils'
+
 namespace :jobs do
-  jobs_root = Rails.root.join('tmp/jobs').to_s
+  if defined? Rails
+    jobs_root = Rails.root.join('tmp/jobs').to_s
+  else
+    jobs_root = File.realpath('.') << '/tmp/jobs'
+  end
   
   desc 'Init Jobs Folders'
   task :init do
