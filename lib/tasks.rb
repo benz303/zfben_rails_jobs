@@ -16,7 +16,7 @@ namespace :jobs do
     File.open(jobs_root + '/.lock', 'w'){ |f| f.write Process.pid.to_s }
     print "Starting jobs at process##{Process.pid}\n"
     loop do
-      list = Dir[jobs_root + '*']
+      list = Dir.glob(jobs_root + '/[a-z0-9-]*')
       if list.length > 0
         print "#{list.length} jobs found, running..\n"
         list.each do |id|
