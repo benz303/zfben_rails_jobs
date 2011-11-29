@@ -105,8 +105,12 @@ class Jobs
           next
         end
         
-        obj.send @list[i][1], *@list[i][2]
-        
+        begin
+          obj.send @list[i][1], *@list[i][2]
+        rescue => e
+          @list[i].push false, e
+          next
+        end
         @list[i].push true, 'Finished'
       end
     end

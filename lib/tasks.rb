@@ -17,6 +17,7 @@ namespace :jobs do
           print "Run Job##{id}@#{Time.now.to_s}\n"
           jobs = Jobs.new
           jobs.import File.basename(id)
+          print "Jobs detail: #{jobs.data}\n"
           jobs.run
         end
       else
