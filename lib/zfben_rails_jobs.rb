@@ -1,5 +1,4 @@
 require 'fileutils'
-require 'rainbow'
 require 'uuid'
 require 'yaml'
 
