@@ -12,10 +12,7 @@
   bundle install
 
 == How to use
-
-  class Sth
-    def todo args
-    end
-  end
   
-  Jobs.new.add(Sth, :todo, args)
+  Jobs.new class: ClassName, method: MethodName, args: MethodArguments
+  
+  Jobs.new at: ScheduleTime

@@ -30,10 +30,8 @@ namespace :jobs do
           jobs = Jobs.new
           jobs.import File.basename(id)
           print "Jobs detail: #{jobs.data}\n"
-          jobs.run
+          print "Jobs result: #{jobs.run}\n"
         end
-      else
-        print "No job found, skipping..\n"
       end
       sleep 10
     end

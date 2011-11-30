@@ -28,6 +28,4 @@ Gem::Specification.new do |s|
   
   s.add_dependency 'rails', '>=3.1.0'
   s.add_dependency 'uuid'
-  s.add_dependency 'whenever'
-  s.add_dependency 'rainbow'
 end

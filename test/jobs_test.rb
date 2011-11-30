@@ -15,31 +15,33 @@ class JobsTest < Test::Unit::TestCase
   
   def test_jobs_add
     jobs = Jobs.new
-    assert jobs.add Example, :job_0
-    assert_equal jobs.list, [['Example', :job_0, nil]]
-    assert jobs.add Example, :job, 5
-    assert_equal jobs.list, [['Example', :job_0, nil], ['Example', :job, 5]]
+    assert jobs.add class: Example, method: :job_0, args: nil
+    assert_equal jobs.list, Jobs.new(class: Example, method: :job_0).list
+    assert jobs.add class: Example, method: :job, args: 5
+    assert_equal jobs.list, [{class: :Example, method: :job_0, args: nil}, {class: :Example, method: :job, args: 5}]
   end
   
   def test_jobs_save
     jobs = Jobs.new
-    jobs.add Example, :job_0
+    jobs.add class: Example, method: :job_0
     assert jobs.save
+    jobs.destroy
   end
   
   def test_jobs_import
     jobs = Jobs.new
-    jobs.add Example, :job_0
+    jobs.add class: Example, method: :job_0
     jobs.save
     jobs2 = Jobs.new
     assert jobs2.import(jobs.id)
     assert_equal jobs.data, jobs2.data
+    jobs.destroy
   end
   
   def test_jobs_run
     jobs = Jobs.new
-    jobs.add Example, :job_0
-    jobs.add Example, :job, 1
+    jobs.add class: Example, method: :job_0
+    jobs.add class: Example, method: :job, args: 1
     jobs.save
     assert jobs.run
     assert_equal jobs.result[:successed], 2
@@ -47,12 +49,13 @@ class JobsTest < Test::Unit::TestCase
     jobs2.import jobs.id
     assert jobs2.run
     assert_equal jobs.result[:successed], 2
+    jobs.destroy
   end
   
   def test_jobs_run_at
     at = 1.seconds.from_now
-    jobs = Jobs.new(at)
-    jobs.add Example, :job_0
+    jobs = Jobs.new at: at
+    jobs.add class: Example, method: :job_0
     assert !jobs.run
     sleep 2
     assert jobs.run
