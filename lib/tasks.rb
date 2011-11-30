@@ -6,11 +6,6 @@ namespace :jobs do
   else
     jobs_root = File.realpath('.') << '/tmp/jobs'
   end
-  
-  desc 'Init Jobs Folders'
-  task :init do
-    FileUtils.mkdir(jobs_root) unless File.exists? jobs_root
-  end
 
   desc 'Start Jobs'
   task :start do
@@ -18,7 +13,11 @@ namespace :jobs do
   end
   
   desc 'Run Jobs'
-  task :run => [:init, :environment] do
+  task :run do
+    if defined? Rails
+      Rake::Task[:environment].execute
+    end
+    FileUtils.mkdir(jobs_root) unless File.exists? jobs_root
     File.open(jobs_root + '/.lock', 'w'){ |f| f.write Process.pid.to_s }
     print "Starting jobs at process##{Process.pid}\n"
     loop do

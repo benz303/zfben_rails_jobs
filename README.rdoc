@@ -16,3 +16,7 @@
   Jobs.new class: ClassName, method: MethodName, args: MethodArguments
   
   Jobs.new at: ScheduleTime
+
+== Special
+
+  Jobs.new class: :eval, method: 'system "ls"'

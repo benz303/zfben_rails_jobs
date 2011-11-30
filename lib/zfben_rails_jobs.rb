@@ -4,11 +4,11 @@ require 'yaml'
 
 module ZfbenRailsJobs
   if defined? Rails
-    class Railtie < Rails::Railtie
+    class Railtie < ::Rails::Railtie
       railtie_name :zfben_rails_jobs  
-      path = File.realpath(File.dirname(__FILE__))
+      path = ::File.realpath(::File.dirname(__FILE__))
       rake_tasks do
-        require File.join(path, 'tasks.rb')
+        require ::File.join(path, 'tasks.rb')
       end
     end
   end
@@ -21,7 +21,7 @@ end
 class Jobs
   def import id
     if File.exists?(@data[:dir] + id)
-      @data = merge YAML::load(File.read(@data[:dir] + id))
+      @data = merge ::YAML::load_file(@data[:dir] + id)
       true
     else
       false
@@ -43,7 +43,7 @@ class Jobs
   def save
     unless locked?
       @data[:locked] = true
-      File.open(path, 'w'){ |f| f.write @data.to_yaml }
+      ::File.open(path, 'w'){ |f| f.write @data.to_yaml }
       true
     else
       false
@@ -51,8 +51,8 @@ class Jobs
   end
   
   def destroy
-    if File.exists? path
-      File.delete path
+    if ::File.exists? path
+      ::File.delete path
     end
     @data = merge
   end
@@ -78,6 +78,7 @@ class Jobs
     failed = 0
     pending = 0
     @data[:list].each{ |job|
+      next if job.nil?
       if job.has_key? :status
         case job[:status]
         when :successed
@@ -105,7 +106,7 @@ class Jobs
   
   def run
     unless @data[:at].nil?
-      if Time.now < @data[:at]
+      if ::Time.now < @data[:at]
         return false
       end
     end
@@ -114,33 +115,49 @@ class Jobs
     
     @data[:list].map!{ |job|
       if !job.has_key?(:status) || job[:status] != :successed
-        unless Object.const_defined?(job[:class])
-          job[:status] = :failed
-          job[:status_msg] = 'Class missing'
-          next
-        end
-        
-        obj = Object.const_get(job[:class])
-        
-        unless obj.respond_to?(job[:method])
-          job[:status] = :failed
-          job[:status_msg] = 'Method missing'
-          next
-        end
-        
-        begin
-          obj.send job[:method], *job[:args]
-        rescue => e
-          job[:status] = :failed
-          job[:status_msg] = e
-          next
+        if job[:class] != :eval
+          unless Object.const_defined?(job[:class])
+            job[:status] = :failed
+            job[:status_msg] = 'Class missing'
+            next
+          end
+          
+          obj = Object.const_get(job[:class])
+          
+          unless obj.respond_to?(job[:method])
+            job[:status] = :failed
+            job[:status_msg] = 'Method missing'
+            next
+          end
+          
+          begin
+            obj.send job[:method], *job[:args]
+          rescue => e
+            job[:status] = :failed
+            job[:status_msg] = e
+            next
+          end
+        else
+          begin
+            Kernel.eval job[:method].to_s
+          rescue => e
+            job[:status] = :failed
+            job[:status_msg] = e
+            next
+          end
         end
         job[:status] = :successed
       end
       job
     }
     
-    update
+    if ::File.exists? path
+      if finished?
+        ::File.delete path
+      else
+        ::File.open(path, 'w'){ |f| f.write data.to_yaml }
+      end
+    end
     true
   end
   
@@ -149,7 +166,7 @@ class Jobs
   
   def initialize opts = {}
     @data = merge opts
-    FileUtils.mkdir(@data[:dir]) unless File.exists?(@data[:dir])
+    ::FileUtils.mkdir(@data[:dir]) unless ::File.exists?(@data[:dir])
     if @data.has_key?(:class)
       add class: @data[:class], method: @data[:method], args: @data[:args]
       @data.delete :class
@@ -164,17 +181,7 @@ class Jobs
       list: [],
       at: nil,
       locked: false,
-      dir: (defined?(::Rails) ? File.realpath(::Rails.root) : File.realpath('.')) << '/tmp/jobs/'
+      dir: (defined?(::Rails) ? ::File.realpath(::Rails.root) : ::File.realpath('.')) << '/tmp/jobs/'
     }.merge(opts)
-  end
-  
-  def update
-    if File.exists? path
-      if finished?
-        File.delete path
-      else
-        File.open(path, 'w'){ |f| f.write data.to_yaml }
-      end
-    end
   end
 end
